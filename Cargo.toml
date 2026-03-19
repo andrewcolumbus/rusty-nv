@@ -1,0 +1,30 @@
+[package]
+name = "rust-nv"
+version = "0.1.0"
+edition = "2021"
+description = "A cross-platform Notational Velocity clone built with Rust and egui"
+license = "MIT"
+
+[dependencies]
+eframe = { version = "0.33", features = ["glow", "persistence"] }
+egui = "0.33"
+egui_extras = "0.33"
+catppuccin = { version = "2.4", features = ["css-colors"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+notify = "8"
+chrono = { version = "0.4", features = ["serde"] }
+chrono-humanize = "0.2"
+dirs = "6"
+log = "0.4"
+env_logger = "0.11"
+arboard = "3"
+opener = { version = "0.7", features = ["reveal"] }
+rfd = "0.15"
+pulldown-cmark = "0.12"
+
+[build-dependencies]
+winresource = "0.1"
+
+[dev-dependencies]
+tempfile = "3"

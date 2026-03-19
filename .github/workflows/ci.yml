@@ -161,7 +161,7 @@ jobs:
 
       - name: Build Flatpak
         run: |
-          flatpak-builder --force-clean --allow-network --repo=repo \
+          flatpak-builder --force-clean --repo=repo \
             builddir packaging/linux/group.theimmersive.RustNv.yml
 
       - name: Create Flatpak bundle

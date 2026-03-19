@@ -29,7 +29,10 @@ modules:
       - cargo build --release
       - install -Dm755 target/release/rust-nv /app/bin/rust-nv
       - install -Dm644 packaging/linux/group.theimmersive.RustNv.desktop /app/share/applications/group.theimmersive.RustNv.desktop
-      - install -Dm644 logo.png /app/share/icons/hicolor/512x512/apps/group.theimmersive.RustNv.png
+      - python3 -c "from PIL import Image; img=Image.open('logo.png'); img.resize((512,512), Image.LANCZOS).save('logo-512.png')"
+      - install -Dm644 logo-512.png /app/share/icons/hicolor/512x512/apps/group.theimmersive.RustNv.png
+      - python3 -c "from PIL import Image; img=Image.open('logo.png'); img.resize((128,128), Image.LANCZOS).save('logo-128.png')"
+      - install -Dm644 logo-128.png /app/share/icons/hicolor/128x128/apps/group.theimmersive.RustNv.png
       - install -Dm644 packaging/linux/group.theimmersive.RustNv.metainfo.xml /app/share/metainfo/group.theimmersive.RustNv.metainfo.xml
     sources:
       - type: dir

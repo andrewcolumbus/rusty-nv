@@ -1,6 +1,6 @@
 # rust-nv
 
-A cross-platform rewrite of [Notational Velocity](https://notational.net/) in Rust using [egui](https://github.com/emilk/egui), with catppuccin theme support.
+A cross-platform note-taking app inspired by [Notational Velocity](https://notational.net/), built from scratch in Rust using [egui](https://github.com/emilk/egui), with catppuccin theme support. This is an independent implementation — it shares no code with the original Notational Velocity.
 
 ## Features
 
@@ -23,7 +23,7 @@ cargo install --path .
 ## Build from source
 
 ```bash
-git clone https://github.com/acswi/rust-nv.git
+git clone https://github.com/andrewcolumbus/rusty-nv.git
 cd rust-nv
 cargo build --release
 ```

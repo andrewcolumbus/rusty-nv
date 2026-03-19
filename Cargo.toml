@@ -2,7 +2,7 @@
 name = "rust-nv"
 version = "0.1.0"
 edition = "2021"
-description = "A cross-platform Notational Velocity clone built with Rust and egui"
+description = "A cross-platform note-taking app inspired by Notational Velocity, built with Rust and egui"
 license = "MIT"
 
 [dependencies]

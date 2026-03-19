@@ -1,8 +1,8 @@
 [Setup]
 AppName=rust-nv
 AppVersion=0.1.0
-AppPublisher=Antic Studios
-AppPublisherURL=https://github.com/acswi/rust-nv
+AppPublisher=The Immersive Group
+AppPublisherURL=https://github.com/andrewcolumbus/rusty-nv
 DefaultDirName={autopf}\rust-nv
 DefaultGroupName=rust-nv
 SetupIconFile=logo.ico

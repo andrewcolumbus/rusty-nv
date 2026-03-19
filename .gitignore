@@ -1,1 +1,9 @@
 target/
+builddir/
+repo/
+.flatpak-builder/
+*.flatpak
+*.dmg
+rust-nv.app/
+rust-nv.iconset/
+rust-nv.icns

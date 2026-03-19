@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>group.theimmersive.RustNv</id>
+  <name>rust-nv</name>
+  <summary>A cross-platform note-taking app inspired by Notational Velocity</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      rust-nv is a keyboard-driven note-taking application built with Rust and egui.
+      It features a unified search/create field, instant substring search, auto-save,
+      filesystem watching, and catppuccin themes.
+    </p>
+  </description>
+  <url type="homepage">https://github.com/andrewcolumbus/rusty-nv</url>
+  <url type="bugtracker">https://github.com/andrewcolumbus/rusty-nv/issues</url>
+  <launchable type="desktop-id">group.theimmersive.RustNv.desktop</launchable>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.1.0" date="2026-03-18" />
+  </releases>
+</component>

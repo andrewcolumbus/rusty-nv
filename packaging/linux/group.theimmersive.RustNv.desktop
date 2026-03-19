@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=rust-nv
+GenericName=Note Taking
+Comment=A cross-platform note-taking app inspired by Notational Velocity
+Exec=rust-nv
+Icon=group.theimmersive.RustNv
+Terminal=false
+Categories=Office;TextEditor;Utility;
+Keywords=notes;notational;velocity;text;
+StartupWMClass=rust-nv

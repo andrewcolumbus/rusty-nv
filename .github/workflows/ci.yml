@@ -1,0 +1,197 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libwayland-dev libx11-dev libxcb1-dev libdbus-1-dev
+
+      - run: cargo fmt --check
+      - run: cargo clippy -- -D warnings
+      - run: cargo test
+
+  build-windows:
+    name: Build Windows Installer
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: build-windows
+
+      - run: cargo build --release
+
+      - name: Build installer with Inno Setup
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: installer/rust-nv-*-setup.exe
+
+  build-macos:
+    name: Build macOS DMG
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: build-macos
+
+      - run: cargo build --release
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate .icns icon
+        run: |
+          mkdir -p rust-nv.iconset
+          sips -z 16 16     logo.png --out rust-nv.iconset/icon_16x16.png
+          sips -z 32 32     logo.png --out rust-nv.iconset/icon_16x16@2x.png
+          sips -z 32 32     logo.png --out rust-nv.iconset/icon_32x32.png
+          sips -z 64 64     logo.png --out rust-nv.iconset/icon_32x32@2x.png
+          sips -z 128 128   logo.png --out rust-nv.iconset/icon_128x128.png
+          sips -z 256 256   logo.png --out rust-nv.iconset/icon_128x128@2x.png
+          sips -z 256 256   logo.png --out rust-nv.iconset/icon_256x256.png
+          sips -z 512 512   logo.png --out rust-nv.iconset/icon_256x256@2x.png
+          sips -z 512 512   logo.png --out rust-nv.iconset/icon_512x512.png
+          sips -z 1024 1024 logo.png --out rust-nv.iconset/icon_512x512@2x.png
+          iconutil -c icns rust-nv.iconset
+
+      - name: Create .app bundle
+        run: |
+          mkdir -p "rust-nv.app/Contents/MacOS"
+          mkdir -p "rust-nv.app/Contents/Resources"
+          cp target/release/rust-nv "rust-nv.app/Contents/MacOS/rust-nv"
+          cp rust-nv.icns "rust-nv.app/Contents/Resources/AppIcon.icns"
+          cp packaging/macos/Info.plist "rust-nv.app/Contents/Info.plist"
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname "rust-nv" \
+            -srcfolder rust-nv.app \
+            -ov \
+            -format UDZO \
+            "rust-nv-${{ steps.version.outputs.version }}-macos-arm64.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: rust-nv-*-macos-*.dmg
+
+  build-linux:
+    name: Build Linux Flatpak
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Flatpak
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+
+      - name: Cache Flatpak SDK
+        uses: actions/cache@v4
+        with:
+          path: /var/lib/flatpak
+          key: flatpak-sdk-24.08
+
+      - name: Add Flathub and install SDK
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y flathub \
+            org.freedesktop.Platform//24.08 \
+            org.freedesktop.Sdk//24.08 \
+            org.freedesktop.Sdk.Extension.rust-stable//24.08
+
+      - name: Cache Flatpak builder
+        uses: actions/cache@v4
+        with:
+          path: .flatpak-builder
+          key: flatpak-builder-${{ hashFiles('Cargo.lock') }}
+          restore-keys: flatpak-builder-
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build Flatpak
+        run: |
+          flatpak-builder --force-clean --allow-network --repo=repo \
+            builddir packaging/linux/group.theimmersive.RustNv.yml
+
+      - name: Create Flatpak bundle
+        run: |
+          flatpak build-bundle repo \
+            "rust-nv-${{ steps.version.outputs.version }}-linux-x86_64.flatpak" \
+            group.theimmersive.RustNv
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-installer
+          path: rust-nv-*-linux-*.flatpak
+
+  release:
+    name: Create GitHub Release
+    needs: [build-windows, build-macos, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: release-assets
+
+      - name: List release assets
+        run: ls -la release-assets/
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          generate_release_notes: true

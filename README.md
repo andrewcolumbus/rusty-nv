@@ -54,4 +54,4 @@ Notes are stored in `~/Documents/rust-nv-notes/` by default.
 
 ## License
 
-MIT
+GPLv3
